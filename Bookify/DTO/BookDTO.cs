@@ -1,6 +1,6 @@
-﻿namespace Entity
+﻿namespace Bookify.DTO
 {
-    public class Book : Base
+    public class BookDTO : BaseDTO
     {
         public int BookId { get; set; }
         public string Name { get; set; }

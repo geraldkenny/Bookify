@@ -1,4 +1,8 @@
-﻿using Entity;
+﻿using AutoMapper;
+using Bookify.Helpers;
+using Bookify.Repositories;
+using Bookify.Repositories.Interfaces;
+using Entity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -29,6 +33,9 @@ namespace Bookify
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            // ===== Configure CORS ====
+
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy",
@@ -101,6 +108,19 @@ namespace Bookify
                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
                };
            });
+
+            // ===== Configure DI ====
+
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            // ===== Auto Mapper Configurations ====
+            var mappingConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new MappingProfile());
+            });
+
+            IMapper mapper = mappingConfig.CreateMapper();
+            services.AddSingleton(mapper);
 
         }
 
