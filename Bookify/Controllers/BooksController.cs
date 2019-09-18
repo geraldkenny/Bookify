@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Entity;
 using Bookify.Repositories.Interfaces;
 using AutoMapper;
+using Bookify.DTO;
 
 namespace Bookify.Controllers
 {
@@ -28,12 +29,18 @@ namespace Bookify.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Retrieves available books
+        /// </summary>
+        /// <remarks>Only authorized for admin users!</remarks>
+        /// <response code="200">Books retrieved</response>
         // GET: api/Books
         [HttpGet]
         [Produces("application/json")]
-        public async Task<ActionResult<IEnumerable<Book>>> GetBooks()
+        public async Task<ActionResult<IEnumerable<BookDTO>>> GetBooks()
         {
-            return await _unitOfWork.Book.GetBooksAsync();
+            var books = await _unitOfWork.Book.GetBooksAsync();
+            return _mapper.Map<List<BookDTO>>(books);
         }
 
         // GET: api/Books/5
@@ -89,15 +96,17 @@ namespace Bookify.Controllers
         /// <response code="500">Oops! Can't create your product right now</response>
         // POST: api/Books
         [HttpPost]
-        public async Task<ActionResult<Book>> PostBook([FromBody] Book book)
+        public async Task<ActionResult<Book>> PostBook([FromBody] AddBookDTO book)
         {
-            if (await _unitOfWork.Book.AddBookAsync(book))
+            var model = _mapper.Map<Book>(book);
+            //model.CreatedBy = User.Identity.Name;
+            if (await _unitOfWork.Book.AddBookAsync(model))
             {
 
-                return CreatedAtAction("GetBook", new { id = book.BookId }, book);
+                return CreatedAtAction("GetBook", new { id = model.BookId }, model);
             }
             return BadRequest();
-           
+
         }
 
         // DELETE: api/Books/5

@@ -24,6 +24,7 @@ namespace Bookify.Repositories
         {
             try
             {
+                book.CreatedAt = DateTime.Now;
                 _context.Books.Add(book);
                 await _context.SaveChangesAsync();
             }
@@ -58,7 +59,7 @@ namespace Bookify.Repositories
 
         public async Task<List<Book>> GetBooksAsync()
         {
-           return await _context.Books.ToListAsync();
+           return await _context.Books.Where(x => !x.IsDeleted).ToListAsync();
         }
 
 

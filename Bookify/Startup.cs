@@ -59,7 +59,7 @@ namespace Bookify
 
             // ===== Add Identity ========
             services.AddDefaultIdentity<IdentityUser>().AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+            .AddEntityFrameworkStores<UserDbContext>().AddDefaultTokenProviders();
 
             // ===== Configure Swagger ======
             services.AddSwaggerGen(c =>
@@ -84,9 +84,9 @@ namespace Bookify
                     Type = "apiKey"
                 });
                 // Set the comments path for the Swagger JSON and UI.
-                //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                //c.IncludeXmlComments(xmlPath);
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
             });
 
             // ===== Configure JWT Token Authentication ====
@@ -110,8 +110,9 @@ namespace Bookify
            });
 
             // ===== Configure DI ====
-
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IBookRepository, BookRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
 
             // ===== Auto Mapper Configurations ====
             var mappingConfig = new MapperConfiguration(mc =>
@@ -121,6 +122,7 @@ namespace Bookify
 
             IMapper mapper = mappingConfig.CreateMapper();
             services.AddSingleton(mapper);
+            services.AddAutoMapper(typeof(Startup));
 
         }
 

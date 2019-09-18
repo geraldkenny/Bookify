@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Bookify</name>
+    </assembly>
+    <members>
+        <member name="M:Bookify.Controllers.AccountController.ToUnixEpochDate(System.DateTime)">
+            <returns>Date converted to seconds since Unix epoch (Jan 1, 1970, midnight UTC).</returns>
+        </member>
+        <member name="M:Bookify.Controllers.BooksController.GetBooks">
+            <summary>
+            Retrieves available books
+            </summary>
+            <remarks>Only authorized for admin users!</remarks>
+            <response code="200">Books retrieved</response>
+        </member>
+        <member name="M:Bookify.Controllers.BooksController.PostBook(Bookify.DTO.AddBookDTO)">
+            <summary>
+            Creates a new book
+            </summary>
+            <remarks>Only authorized for admin users!</remarks>
+            <response code="200">Book created</response>
+            <response code="400">Book has missing/invalid values</response>
+            <response code="500">Oops! Can't create your product right now</response>
+        </member>
+        <member name="P:Bookify.DTO.AddBookDTO.Name">
+            <summary>
+            The name of the book
+            </summary>
+            <example>The art of not giving a fuck</example>
+        </member>
+        <member name="P:Bookify.DTO.AddBookDTO.Description">
+            <summary>
+            The description of the book
+            </summary>
+            <example>Becoming your best self</example>
+        </member>
+        <member name="P:Bookify.DTO.AddBookDTO.BookCount">
+            <summary>
+            The number of the books avaible
+            </summary>
+            <example>10</example>
+        </member>
+    </members>
+</doc>
