@@ -23,6 +23,37 @@
             <response code="400">Book has missing/invalid values</response>
             <response code="500">Oops! Can't create your product right now</response>
         </member>
+        <member name="M:Bookify.Controllers.UsersController.GetBookifyUsers">
+            <summary>
+            Retrieves available users
+            </summary>
+            <remarks>Only authorized for admin users!</remarks>
+            <response code="200">Users retrieved</response>
+        </member>
+        <member name="M:Bookify.Controllers.UsersController.GetUser(System.Int32)">
+            <summary>
+            Retrieves user with id
+            </summary>
+            <remarks>Only authorized for admin users!</remarks>
+            <response code="200">User retrieved</response>
+            <response code="404">User Not found with a StatusCode and ResponseMessage</response>
+        </member>
+        <member name="M:Bookify.Controllers.UsersController.SearchUsers(System.String)">
+            <summary>
+            Retrieves users based on the search params
+            Matching either first, last name or email
+            </summary>
+            <remarks>Only authorized for admin users!</remarks>
+            <response code="200">Users retrieved</response>
+            <response code="404">Users Not found with a StatusCode and ResponseMessage</response>
+        </member>
+        <member name="M:Bookify.Controllers.UsersController.DeleteUser(System.Int32)">
+            <summary>
+            Deletes user
+            </summary>
+            <remarks>Only authorized for admin users!</remarks>
+            <response code="200">User retrieved</response>
+        </member>
         <member name="P:Bookify.DTO.AddBookDTO.Name">
             <summary>
             The name of the book

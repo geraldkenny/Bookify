@@ -7,6 +7,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Bookify.Repositories.Interfaces;
+using Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -21,16 +23,20 @@ namespace Bookify.Controllers
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
         private IConfiguration _config;
+        private readonly IUnitOfWork _unitOfWork;
+
 
 
         public AccountController(UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
+            SignInManager<IdentityUser> signInManager, IUnitOfWork unitOfWork,
             IConfiguration config
             )
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _config = config;
+            _unitOfWork = unitOfWork;
+
         }
 
         [AllowAnonymous]
@@ -42,8 +48,8 @@ namespace Bookify.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = new IdentityUser { UserName = model.Email, Email = model.Email, };
-            var result = await _userManager.CreateAsync(user, model.Password);
+            var identityUser = new IdentityUser { UserName = model.Email, Email = model.Email, };
+            var result = await _userManager.CreateAsync(identityUser, model.Password);
 
             if (!result.Succeeded)
             {
@@ -54,8 +60,10 @@ namespace Bookify.Controllers
             }
             else
             {
-                await _userManager.AddToRoleAsync(user, "Admin");
-                await _signInManager.SignInAsync(user, isPersistent: false);
+                var user = new User { CreatedAt = DateTime.Now, FirstName = model.FirstName, LastName = model.LastName, EmailAddress = model.Email, UserName = model.Email };
+                await _unitOfWork.User.CreateUserAsync(user);
+                await _userManager.AddToRoleAsync(identityUser, "Admin");
+                await _signInManager.SignInAsync(identityUser, isPersistent: false);
             }
             return Ok(new RegisterResponse
             {
@@ -107,7 +115,8 @@ namespace Bookify.Controllers
             var claims = new[] {
                    // new Claim(JwtRegisteredClaimNames.Sub, user.),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                    //new Claim(ClaimTypes.Role, "Admin"),
+                    new Claim(ClaimTypes.Role, "Admin"),
+                   // new Claim(ClaimTypes, "Admin"),
 
                    // new Claim(JwtRegisteredClaimNames.Birthdate, user.Birthdate.ToString("yyyy-MM-dd")),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())

@@ -16,7 +16,7 @@ namespace Entity
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            //base.OnModelCreating(builder);
+            base.OnModelCreating(builder);
             //// Customize the ASP.NET Identity model and override the defaults if needed.
             //// For example, you can rename the ASP.NET Identity table names and more.
             //// Add your customizations after calling base.OnModelCreating(builder);
@@ -27,7 +27,7 @@ namespace Entity
             //    new User { Username = "Elon", CreatedAt = DateTime.Now, FirstName = "Elon", LastName = "Musk", UserId = 2 },
             //    new User { Username = "Jeff", CreatedAt = DateTime.Now, FirstName = "Jeff", LastName = "Bezos", UserId = 3 }
             //);
-            base.OnModelCreating(builder);
+            builder.Entity<IdentityRole>().HasData(new IdentityRole { Name = "Admin", NormalizedName = "Admin".ToUpper() });
            
         }
 

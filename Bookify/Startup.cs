@@ -61,6 +61,10 @@ namespace Bookify
             services.AddDefaultIdentity<IdentityUser>().AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<UserDbContext>().AddDefaultTokenProviders();
 
+            services.AddIdentity<IdentityUser, IdentityRole>()
+            .AddEntityFrameworkStores<UserDbContext>()
+            .AddDefaultTokenProviders();
+
             // ===== Configure Swagger ======
             services.AddSwaggerGen(c =>
             {
