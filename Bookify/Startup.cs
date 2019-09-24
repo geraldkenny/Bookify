@@ -2,6 +2,7 @@
 using Bookify.Helpers;
 using Bookify.Repositories;
 using Bookify.Repositories.Interfaces;
+using Bookify.Swagger;
 using Entity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -61,10 +62,6 @@ namespace Bookify
             services.AddDefaultIdentity<IdentityUser>().AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<UserDbContext>().AddDefaultTokenProviders();
 
-            services.AddIdentity<IdentityUser, IdentityRole>()
-            .AddEntityFrameworkStores<UserDbContext>()
-            .AddDefaultTokenProviders();
-
             // ===== Configure Swagger ======
             services.AddSwaggerGen(c =>
             {
@@ -80,13 +77,14 @@ namespace Bookify
                         Url = "http://geraldkenny.com"
                     }
                 });
-                c.AddSecurityDefinition("oauth2", new ApiKeyScheme
+                c.AddSecurityDefinition("Bearer", new ApiKeyScheme
                 {
                     Description = "Standard Authorization header using the Bearer scheme. Example: \"bearer {token}\"",
                     In = "header",
                     Name = "Authorization",
                     Type = "apiKey"
                 });
+                c.OperationFilter<AuthorizationHeaderParameterOperationFilter>();
                 // Set the comments path for the Swagger JSON and UI.
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -153,7 +151,8 @@ namespace Bookify
                 routes.MapRoute(
                     name: "default",
                     template: "{controller}/{action=Index}/{id?}");
-            }); app.UseSwagger();
+            });
+            app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Bookify API");

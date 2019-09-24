@@ -16,6 +16,7 @@ namespace Bookify.Repositories.Interfaces
          Task<bool> DeleteUserAsync(int userId);
          Task<bool> UserExistsAsync(int userId);
          Task<(bool, User)> GetUserByIdAsync(int userId);
+         Task<(bool, User)> GetUserByUsernameAsync(string username);
          Task<(bool, List<User>)> SearchUserAsync(Expression<Func<User, bool>> expression);
     }
 }

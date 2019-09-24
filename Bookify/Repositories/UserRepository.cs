@@ -98,5 +98,23 @@ namespace Bookify.Repositories
                 return (false, null);
             }
         }
+
+        public async Task<(bool, User)> GetUserByUsernameAsync(string username)
+        {
+            try
+            {
+                var user = await _context.BookifyUsers.FirstOrDefaultAsync(x => x.UserName == username);
+                if (user == null)
+                {
+                    return (false, null);
+                }
+                return (true, user);
+            }
+            catch (Exception)
+            {
+
+                return (false, null);
+            }
+        }
     }
 }

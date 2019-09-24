@@ -14,6 +14,14 @@
             <remarks>Only authorized for admin users!</remarks>
             <response code="200">Books retrieved</response>
         </member>
+        <member name="M:Bookify.Controllers.BooksController.BorrowBook(System.Int32)">
+            <summary>
+            Allows a user to borrow a book
+            </summary>
+            <remarks>Authorized for admin and normal users!</remarks>
+            <response code="200">Book borrowed</response>
+            <response code="400">already borrowed book</response>
+        </member>
         <member name="M:Bookify.Controllers.BooksController.PostBook(Bookify.DTO.AddBookDTO)">
             <summary>
             Creates a new book
@@ -22,6 +30,15 @@
             <response code="200">Book created</response>
             <response code="400">Book has missing/invalid values</response>
             <response code="500">Oops! Can't create your product right now</response>
+        </member>
+        <member name="M:Bookify.Controllers.BooksController.DeleteBook(System.Int32)">
+            <summary>
+            Deletes a new book
+            </summary>
+            <remarks>Only authorized for admin users!</remarks>
+            <response code="200">Book deleted</response>
+            <response code="400">Book has missing/invalid values</response>
+            <response code="500">Oops! Can't create your delete right now</response>
         </member>
         <member name="M:Bookify.Controllers.UsersController.GetBookifyUsers">
             <summary>

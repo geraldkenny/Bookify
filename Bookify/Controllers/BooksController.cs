@@ -9,6 +9,7 @@ using Entity;
 using Bookify.Repositories.Interfaces;
 using AutoMapper;
 using Bookify.DTO;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Bookify.Controllers
 {
@@ -45,6 +46,8 @@ namespace Bookify.Controllers
 
         // GET: api/Books/5
         [HttpGet("{id}")]
+        [Produces("application/json")]
+
         public async Task<ActionResult<Book>> GetBook(int id)
         {
             var book = await _context.Books.FindAsync(id);
@@ -57,6 +60,36 @@ namespace Bookify.Controllers
             return book;
         }
 
+        /// <summary>
+        /// Allows a user to borrow a book
+        /// </summary>
+        /// <remarks>Authorized for admin and normal users!</remarks>
+        /// <response code="200">Book borrowed</response>
+        /// <response code="400">already borrowed book</response>
+        // GET: api/Books/Borrow/5
+        [HttpGet]
+        [Route("Borrow")]
+        [Authorize]
+
+        public async Task<ActionResult<BookDTO>> BorrowBook(int bookId)
+        {
+            var user = await _unitOfWork.User.GetUserByUsernameAsync(User.Identity.Name);
+            var (book, respMessage) = await _unitOfWork.Book.BorrowBookAsync(bookId, user.Item2);
+            if (book != null)
+            {
+                return _mapper.Map<BookDTO>(book);
+            }
+            return BadRequest(new { status_code = 03, response_message = respMessage });
+        }
+
+
+        /// <summary>
+        /// Update existing book
+        /// </summary>
+        /// <remarks>Only authorized for admin users!</remarks>
+        /// <response code="200">Book updated</response>
+        /// <response code="400">Book has missing/invalid values</response>
+        /// <response code="500">Oops! Can't update your book right now</response>
         // PUT: api/Books/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutBook(int id, Book book)
@@ -84,7 +117,7 @@ namespace Bookify.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok();
         }
 
         /// <summary>
@@ -109,20 +142,24 @@ namespace Bookify.Controllers
 
         }
 
+        /// <summary>
+        /// Deletes a new book
+        /// </summary>
+        /// <remarks>Only authorized for admin users!</remarks>
+        /// <response code="200">Book deleted</response>
+        /// <response code="400">Book has missing/invalid values</response>
+        /// <response code="500">Oops! Can't create your delete right now</response>
         // DELETE: api/Books/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<Book>> DeleteBook(int id)
         {
-            var book = await _context.Books.FindAsync(id);
-            if (book == null)
+            var status = await _unitOfWork.Book.DeleteBookAsync(id);
+            if (status)
             {
-                return NotFound();
+                return Ok(new { status_code = 00, response_message = "Book deleted!" });
+
             }
-
-            _context.Books.Remove(book);
-            await _context.SaveChangesAsync();
-
-            return book;
+            return BadRequest();
         }
 
         private bool BookExists(int id)

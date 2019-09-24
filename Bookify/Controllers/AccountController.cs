@@ -113,10 +113,10 @@ namespace Bookify.Controllers
         private string BuildToken(LoginModel user)
         {
             var claims = new[] {
-                   // new Claim(JwtRegisteredClaimNames.Sub, user.),
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
                     new Claim(ClaimTypes.Role, "Admin"),
-                   // new Claim(ClaimTypes, "Admin"),
+                    new Claim(ClaimTypes.Name, user.Email),
 
                    // new Claim(JwtRegisteredClaimNames.Birthdate, user.Birthdate.ToString("yyyy-MM-dd")),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
