@@ -39,6 +39,13 @@ namespace Bookify.Controllers
 
         }
 
+        /// <summary>
+        /// creates users
+        /// </summary>
+        /// <remarks>Only authorized for everyone!</remarks>
+        /// <response code="200">Users created</response>
+        // POST: api/Account
+
         [AllowAnonymous]
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody]RegisterModel model)
@@ -74,26 +81,67 @@ namespace Bookify.Controllers
             });
         }
 
+        /// <summary>
+        /// creates admin users
+        /// </summary>
+        /// <remarks>Only authorized for everyone!</remarks>
+        /// <response code="200">Users created</response>
+        // POST: api/Account
+
+        [AllowAnonymous]
+        [HttpPost("RegisterAdmin")]
+        public async Task<IActionResult> RegisterAdmin([FromBody]RegisterModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var identityUser = new IdentityUser { UserName = model.Email, Email = model.Email, };
+            var result = await _userManager.CreateAsync(identityUser, model.Password);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(new ErrorResponse
+                {
+                    ErrorDescription = "Your Email or Password is Incorrect"
+                });
+            }
+            else
+            {
+                var user = new User { CreatedAt = DateTime.Now, FirstName = model.FirstName, LastName = model.LastName, EmailAddress = model.Email, UserName = model.Email };
+                await _unitOfWork.User.CreateUserAsync(user);
+                await _signInManager.SignInAsync(identityUser, isPersistent: false);
+            }
+            return Ok(new RegisterResponse
+            {
+                Email = model.Email,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+
+            });
+        }
+
+
         [AllowAnonymous]
         [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginModel model)
         {
             if (ModelState.IsValid)
             {
+                var userTask = _userManager.FindByEmailAsync(model.Email);
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, lockoutOnFailure: true);
                 if (result.Succeeded)
                 {
-                    var jwt =  BuildToken(model);
-                    //var jwt = await GenerateEncodedToken(model.Email, identity);
-
+                    var user = await userTask;
+                    var userRole = await _userManager.IsInRoleAsync(user, "Admin");
+                    var jwt =  BuildToken(model, userRole);
                     return Ok(new LoginResponse
                     {
                         Token = jwt
                     });
                 }
-                var identity = await GetClaimsIdentity(model.Email, model.Password);
-
-                if (identity == null)
+                else 
                 {
                     return BadRequest(new ErrorResponse
                     {
@@ -110,15 +158,15 @@ namespace Bookify.Controllers
 
         }
 
-        private string BuildToken(LoginModel user)
+        private string BuildToken(LoginModel user, bool isAdmin)
         {
+            var userRole = (!isAdmin) ? "User" : "Admin";
             var claims = new[] {
                     new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                     new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                    new Claim(ClaimTypes.Role, "Admin"),
+                     new Claim(ClaimTypes.Role, userRole),
                     new Claim(ClaimTypes.Name, user.Email),
-
-                   // new Claim(JwtRegisteredClaimNames.Birthdate, user.Birthdate.ToString("yyyy-MM-dd")),
+                    new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(DateTime.Now).ToString(), ClaimValueTypes.Integer64),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
              };
 
@@ -134,62 +182,6 @@ namespace Bookify.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        private async Task<ClaimsIdentity> GetClaimsIdentity(string email, string password)
-        {
-            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
-                return await Task.FromResult<ClaimsIdentity>(null);
-
-            // get the user to verifty
-            var userToVerify = await _userManager.FindByEmailAsync(email);
-
-            if (userToVerify == null) return await Task.FromResult<ClaimsIdentity>(null);
-
-            // check the credentials
-            if (await _userManager.CheckPasswordAsync(userToVerify, password))
-            {
-                return await Task.FromResult<ClaimsIdentity>(null);
-
-                //return await Task.FromResult(GenerateClaimsIdentity(email, userToVerify.Id));
-            }
-
-            // Credentials are invalid, or account doesn't exist
-            return await Task.FromResult<ClaimsIdentity>(null);
-        }
-
-        //public ClaimsIdentity GenerateClaimsIdentity(string userName, string id)
-        //{
-        //    return new ClaimsIdentity(new GenericIdentity(userName, "Token"), new[]
-        //    {
-        //        new Claim(Helpers.Constants.Strings.JwtClaimIdentifiers.Id, id),
-        //        new Claim(Helpers.Constants.Strings.JwtClaimIdentifiers.Rol, Helpers.Constants.Strings.JwtClaims.ApiAccess)
-        //    });
-        //}
-
-        public async Task<string> GenerateEncodedToken(string userName, ClaimsIdentity identity)
-        {
-            var claims = new[]
-            {
-                 new Claim(JwtRegisteredClaimNames.Email, userName),
-                 new Claim(JwtRegisteredClaimNames.Sub, userName),
-                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                 new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(DateTime.Now).ToString(), ClaimValueTypes.Integer64),
-
-            };
-
-            // Create the JWT security token and encode it.
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var jwt = new JwtSecurityToken(_config["Jwt:Issuer"],
-              _config["Jwt:Issuer"],
-              claims,
-              expires: DateTime.Now.AddMinutes(30),
-              signingCredentials: creds);
-
-            var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
-
-            return encodedJwt;
-        }
         /// <returns>Date converted to seconds since Unix epoch (Jan 1, 1970, midnight UTC).</returns>
         private static long ToUnixEpochDate(DateTime date)
           => (long)Math.Round((date.ToUniversalTime() -

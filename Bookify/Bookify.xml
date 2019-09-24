@@ -4,6 +4,20 @@
         <name>Bookify</name>
     </assembly>
     <members>
+        <member name="M:Bookify.Controllers.AccountController.Register(Bookify.Controllers.AccountController.RegisterModel)">
+            <summary>
+            creates users
+            </summary>
+            <remarks>Only authorized for everyone!</remarks>
+            <response code="200">Users created</response>
+        </member>
+        <member name="M:Bookify.Controllers.AccountController.RegisterAdmin(Bookify.Controllers.AccountController.RegisterModel)">
+            <summary>
+            creates users
+            </summary>
+            <remarks>Only authorized for everyone!</remarks>
+            <response code="200">Users created</response>
+        </member>
         <member name="M:Bookify.Controllers.AccountController.ToUnixEpochDate(System.DateTime)">
             <returns>Date converted to seconds since Unix epoch (Jan 1, 1970, midnight UTC).</returns>
         </member>
@@ -14,6 +28,14 @@
             <remarks>Only authorized for admin users!</remarks>
             <response code="200">Books retrieved</response>
         </member>
+        <member name="M:Bookify.Controllers.BooksController.GetBook(System.Int32)">
+            <summary>
+            Retrieves available books
+            </summary>
+            <remarks>Only authorized for admin users!</remarks>
+            <response code="200">Books retrieved</response>
+            <response code="204">Book not found</response>
+        </member>
         <member name="M:Bookify.Controllers.BooksController.BorrowBook(System.Int32)">
             <summary>
             Allows a user to borrow a book
@@ -21,6 +43,15 @@
             <remarks>Authorized for admin and normal users!</remarks>
             <response code="200">Book borrowed</response>
             <response code="400">already borrowed book</response>
+        </member>
+        <member name="M:Bookify.Controllers.BooksController.PutBook(System.Int32,Entity.Book)">
+            <summary>
+            Update existing book
+            </summary>
+            <remarks>Only authorized for admin users!</remarks>
+            <response code="200">Book updated</response>
+            <response code="400">Book has missing/invalid values</response>
+            <response code="500">Oops! Can't update your book right now</response>
         </member>
         <member name="M:Bookify.Controllers.BooksController.PostBook(Bookify.DTO.AddBookDTO)">
             <summary>

@@ -10,11 +10,13 @@ using Bookify.Repositories.Interfaces;
 using AutoMapper;
 using Bookify.DTO;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Bookify.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class UsersController : ControllerBase
     {
         private readonly UserDbContext _context;
@@ -36,6 +38,7 @@ namespace Bookify.Controllers
         /// <response code="200">Users retrieved</response>
         // GET: api/Users
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<UserDTO>>> GetBookifyUsers()
         {
             var users = await _unitOfWork.User.GetUsersAsync();
@@ -49,6 +52,7 @@ namespace Bookify.Controllers
         /// <response code="404">User Not found with a StatusCode and ResponseMessage</response>
         // GET: api/Users/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<UserDTO>> GetUser(int id)
         {
             var(isUserFound, user) = await _unitOfWork.User.GetUserByIdAsync(id);

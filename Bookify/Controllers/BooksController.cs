@@ -15,6 +15,7 @@ namespace Bookify.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class BooksController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -44,11 +45,19 @@ namespace Bookify.Controllers
             return _mapper.Map<List<BookDTO>>(books);
         }
 
+        /// <summary>
+        /// Retrieves available books
+        /// </summary>
+        /// <remarks>Only authorized for admin users!</remarks>
+        /// <response code="200">Books retrieved</response>
+        /// <response code="204">Book not found</response>
+
         // GET: api/Books/5
         [HttpGet("{id}")]
         [Produces("application/json")]
+        [Authorize(Roles = "Admin")]
 
-        public async Task<ActionResult<Book>> GetBook(int id)
+        public async Task<ActionResult<BookDTO>> GetBook(int id)
         {
             var book = await _context.Books.FindAsync(id);
 
@@ -57,7 +66,7 @@ namespace Bookify.Controllers
                 return NotFound();
             }
 
-            return book;
+            return _mapper.Map<BookDTO>(book);
         }
 
         /// <summary>
@@ -92,6 +101,8 @@ namespace Bookify.Controllers
         /// <response code="500">Oops! Can't update your book right now</response>
         // PUT: api/Books/5
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<IActionResult> PutBook(int id, Book book)
         {
             if (id != book.BookId)
@@ -129,6 +140,8 @@ namespace Bookify.Controllers
         /// <response code="500">Oops! Can't create your product right now</response>
         // POST: api/Books
         [HttpPost]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ActionResult<Book>> PostBook([FromBody] AddBookDTO book)
         {
             var model = _mapper.Map<Book>(book);
@@ -151,6 +164,8 @@ namespace Bookify.Controllers
         /// <response code="500">Oops! Can't create your delete right now</response>
         // DELETE: api/Books/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ActionResult<Book>> DeleteBook(int id)
         {
             var status = await _unitOfWork.Book.DeleteBookAsync(id);
